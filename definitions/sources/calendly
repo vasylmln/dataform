@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "wellis-400118",
+  schema: "calendly",  -- Your raw Fivetran dataset name in BigQuery
+  name: "event"                -- Your raw table name
+}
