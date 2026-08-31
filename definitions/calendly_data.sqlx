@@ -1,7 +1,7 @@
 config {
   type: "table",
-  schema: "wellis-400118",  // Target dataset in BigQuery
-  name: "DWH",
+  schema: "DWH",  // Target dataset in BigQuery
+  name: "test_calendly",
   description: "Cleaned fact table of scheduled Calendly events",
   columns: {
     event_uri: "Unique URI identifier for the event",
