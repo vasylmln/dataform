@@ -1,0 +1,61 @@
+config {
+  type: "table",
+  schema: "Core",
+  description: "Fact table summarizing Calendly meeting events, including categorized meeting types, durations, and hosts.",
+  columns: {
+    id: "Unique identifier for the meeting event",
+    email: "Email address of the invitee",
+    meeting_status: "Status of the meeting event",
+    event_name: "Name of the meeting event",
+    event_type: "Categorized meeting type (e.g., Intake, Check-in, Other)",
+    intake_created_at: "Datetime when the meeting was booked, adjusted to Europe/Amsterdam timezone",
+    intake_event_start_time: "Start datetime of the meeting, adjusted to Europe/Amsterdam timezone",
+    intake_event_end_time: "End datetime of the meeting, adjusted to Europe/Amsterdam timezone",
+    host_name: "Name of the employee host of the event",
+    host_email: "Email address of the employee host of the event",
+    intake_duration: "Duration of the meeting formatted as HH:MM:SS",
+    intake_date: "Date of the event"
+  },
+  partitionBy: "intake_date",
+  metadata: {
+    overview: "This table tracks scheduled Calendly events such as Intakes and Check-ins. It joins event, invitee, membership, and user records to produce structured transactional event rows.",
+    extraProperties: {
+      generic: {
+        type: "fact table",
+        system: "calendly"
+      }
+    }
+  }
+}
+
+SELECT      
+  EVE.event_uri                                                     AS id,
+  INV.invitee_email                                                 AS email,
+  EVE.event_status                                                  AS meeting_status,
+  EVE.event_name                                                    AS event_name,
+  CASE 
+    WHEN EVE.event_name IN ('Medische intake', 'Telefoonconsult ', 'Telefoonconsult','Wellis Medizinisches Team Deutschland (video)')
+    THEN 'Intake'
+    WHEN LOWER(EVE.event_name) LIKE 'check%'
+    THEN 'Check-in'
+    ELSE 'Other'
+  END                                                               AS event_type,
+  CAST(DATETIME(EVE.created_timestamp, "Europe/Amsterdam") AS DATETIME) AS intake_created_at,
+  CAST(DATETIME(EVE.start_timestamp, "Europe/Amsterdam") AS DATETIME) AS intake_event_start_time,
+  CAST(DATETIME(EVE.end_timestamp, "Europe/Amsterdam") AS DATETIME) AS intake_event_end_time,
+  U.user_name                                                       AS host_name,
+  U.user_email                                                      AS host_email,
+  FORMAT_TIME('%H:%M:%S', TIME(TIMESTAMP_SECONDS(TIMESTAMP_DIFF(EVE.end_timestamp, EVE.start_timestamp, SECOND)))) AS intake_duration,
+  DATE(EVE.start_timestamp)                                         AS intake_date
+FROM ${ref("CalendlyEvents")} AS EVE
+INNER JOIN ${ref("CalendlyEventInvitees")} AS INV 
+    ON INV.event_uri = EVE.event_uri
+-- Koppeling naar membership om de user_uri te vinden
+INNER JOIN ${ref("CalendlyEventMemberships")} AS EM 
+    ON EVE.event_uri = EM.event_uri
+-- Koppeling naar de users tabel voor de medewerker details
+INNER JOIN ${ref("CalendlyUsers")} AS U 
+    ON EM.user_uri = U.user_uri
+WHERE EVE.event_status <> 'canceled'
+  AND (EVE.event_name IN ('Medische intake', 'Telefoonconsult ', 'Telefoonconsult','Wellis Medizinisches Team Deutschland (video)') OR LOWER(EVE.event_name) LIKE 'check%')
+  AND EVE.start_timestamp >= '2026-05-01'
