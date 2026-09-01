@@ -1,0 +1,19 @@
+config {
+  type: "view",
+  schema: "staging",
+  description: "Staged and cleaned users (employees) data"
+}
+
+SELECT
+  uri AS user_uri,
+  name AS user_name,
+  email AS user_email,
+  timezone AS user_timezone,
+  scheduling_url,
+  created_at AS created_timestamp,
+  updated_at AS updated_timestamp,
+  _fivetran_deleted AS is_deleted
+FROM
+  ${ref("users")}
+WHERE
+  COALESCE(_fivetran_deleted, FALSE) IS FALSE
