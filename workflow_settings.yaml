@@ -2,3 +2,4 @@ defaultProject: wellis-400118
 defaultDataset: dataform
 defaultAssertionDataset: dataform_assertions
 dataformCoreVersion: 3.0.52
+defaultLocation: EU
