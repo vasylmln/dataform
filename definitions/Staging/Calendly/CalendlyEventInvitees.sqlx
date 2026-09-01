@@ -1,0 +1,32 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Staged and cleaned meeting invitees data with trimmed and lowercased email addresses",
+  tags: ["auto-cleaning"],
+  columns: {
+    invitee_uri: "Unique identifier for the invitee",
+    event_uri: "Identifier of the associated event/meeting",
+    invitee_email: "Standardized (lowercased and trimmed) email of the invitee",
+    invitee_status: "Status of the invitee (e.g., active, canceled)",
+    invitee_name: "Name of the invitee",
+    invitee_timezone: "Timezone of the invitee",
+    is_rescheduled: "Flag indicating if the invitee was rescheduled",
+    created_timestamp: "Timestamp when the invitee was created",
+    updated_timestamp: "Timestamp when the invitee was updated"
+  }
+}
+
+SELECT
+  uri AS invitee_uri,
+  event_uri,
+  LOWER(TRIM(email)) AS invitee_email,
+  status AS invitee_status,
+  name AS invitee_name,
+  timezone AS invitee_timezone,
+  rescheduled AS is_rescheduled,
+  created_at AS created_timestamp,
+  updated_at AS updated_timestamp
+FROM
+  ${ref("event_invitee")}
+WHERE
+  COALESCE(_fivetran_deleted, FALSE) IS FALSE

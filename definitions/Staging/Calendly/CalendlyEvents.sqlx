@@ -1,0 +1,45 @@
+config {
+  type: "view",
+  schema: "staging",
+  description: "Staged and formatted meeting events",
+  columns: {
+    event_uri: "Unique identifier for the event",
+    event_type_uri: "Identifier of the event type template",
+    event_name: "Name of the event",
+    event_status: "Status of the event (e.g., active, canceled)",
+    start_timestamp: "Start date and time of the event",
+    end_timestamp: "End date and time of the event",
+    duration_minutes: "Duration of the event in minutes",
+    invitees_active: "Number of active invitees in the event",
+    invitees_limit: "Maximum number of invitees allowed for the event",
+    location_type: "Type of location (e.g., Google Meet, phone call, physical)",
+    location: "Location address or join link",
+    canceled_by: "Name of the entity who canceled the event",
+    canceler_type: "Type of entity who canceled the event (e.g., host, invitee)",
+    cancel_reason: "Reason provided for the cancellation",
+    created_timestamp: "Timestamp when the event was booked",
+    updated_timestamp: "Timestamp when the event was last updated"
+  }
+}
+
+SELECT
+  uri AS event_uri,
+  event_type_uri,
+  name AS event_name,
+  status AS event_status,
+  start_time AS start_timestamp,
+  end_time AS end_timestamp,
+  TIMESTAMP_DIFF(end_time, start_time, MINUTE) AS duration_minutes,
+  invitees_active,
+  invitees_limit,
+  location_type,
+  location,
+  canceled_by,
+  canceler_type,
+  cancel_reason,
+  created_at AS created_timestamp,
+  updated_at AS updated_timestamp
+FROM
+  ${ref("event")}
+WHERE
+  COALESCE(_fivetran_deleted, FALSE) IS FALSE

@@ -39,3 +39,17 @@ declare({
   name: "user_availability_schedule_rule_interval",
   description: "Time intervals (from_time / to_time) for each rule"
 });
+
+declare({
+  database: "wellis-400118",
+  schema: "calendly",
+  name: "event_invitee",
+  description: "Raw event invitees table"
+});
+
+declare({
+  database: "wellis-400118",
+  schema: "calendly",
+  name: "event_membership",
+  description: "Raw event memberships table"
+});

@@ -1,7 +1,17 @@
 config {
   type: "view",
-  schema: "staging",
-  description: "Flattens rules and time intervals into a clean schedule layout"
+  schema: "Staging",
+  description: "Flattens rules and time intervals into a clean schedule layout",
+  columns: {
+    schedule_uri: "Unique identifier of the schedule this rule belongs to",
+    rule_type: "Type of the availability rule (e.g., date-specific or weekday-based)",
+    rule_specific_date: "Specific date for date-specific rule types",
+    weekday_name: "Name of the weekday (in lowercase) for weekly rules",
+    from_time: "Start time string of the interval",
+    to_time: "End time string of the interval",
+    start_time_of_day: "Parsed time representation of the start of the interval",
+    end_time_of_day: "Parsed time representation of the end of the interval"
+  }
 }
 
 WITH base_rules AS (
