@@ -49,10 +49,8 @@ SELECT
 FROM ${ref("CalendlyEvents")} AS EVE
 INNER JOIN ${ref("CalendlyEventInvitees")} AS INV 
     ON INV.event_uri = EVE.event_uri
--- Koppeling naar membership om de user_uri te vinden
 INNER JOIN ${ref("CalendlyEventMemberships")} AS EM 
     ON EVE.event_uri = EM.event_uri
--- Koppeling naar de users tabel voor de medewerker details
 INNER JOIN ${ref("CalendlyUsers")} AS U 
     ON EM.user_uri = U.user_uri
 WHERE EVE.event_status <> 'canceled'
