@@ -25,5 +25,3 @@ SELECT
   _fivetran_deleted AS is_deleted
 FROM
   ${ref("users")}
-WHERE
-  COALESCE(_fivetran_deleted, FALSE) IS FALSE

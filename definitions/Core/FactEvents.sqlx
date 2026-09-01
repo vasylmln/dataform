@@ -16,7 +16,6 @@ config {
     intake_duration: "Duration of the meeting formatted as HH:MM:SS",
     intake_date: "Date of the event"
   },
-  partitionBy: "intake_date",
   metadata: {
     overview: "This table tracks scheduled Calendly events such as Intakes and Check-ins. It joins event, invitee, membership, and user records to produce structured transactional event rows.",
     extraProperties: {
@@ -57,5 +56,3 @@ INNER JOIN ${ref("CalendlyEventMemberships")} AS EM
 INNER JOIN ${ref("CalendlyUsers")} AS U 
     ON EM.user_uri = U.user_uri
 WHERE EVE.event_status <> 'canceled'
-  AND (EVE.event_name IN ('Medische intake', 'Telefoonconsult ', 'Telefoonconsult','Wellis Medizinisches Team Deutschland (video)') OR LOWER(EVE.event_name) LIKE 'check%')
-  AND EVE.start_timestamp >= '2026-05-01'
