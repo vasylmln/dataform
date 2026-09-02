@@ -8,13 +8,13 @@ config {
     meeting_status: "Status of the meeting event",
     event_name: "Name of the meeting event",
     event_type: "Categorized meeting type (e.g., Intake, Check-in, Other)",
-    intake_created_at: "Datetime when the meeting was booked, adjusted to Europe/Amsterdam timezone",
-    intake_event_start_time: "Start datetime of the meeting, adjusted to Europe/Amsterdam timezone",
-    intake_event_end_time: "End datetime of the meeting, adjusted to Europe/Amsterdam timezone",
+    created_at: "Datetime when the meeting was booked, adjusted to Europe/Amsterdam timezone",
+    event_start_time: "Start datetime of the meeting, adjusted to Europe/Amsterdam timezone",
+    event_end_time: "End datetime of the meeting, adjusted to Europe/Amsterdam timezone",
     host_name: "Name of the employee host of the event",
     host_email: "Email address of the employee host of the event",
-    intake_duration: "Duration of the meeting formatted as HH:MM:SS",
-    intake_date: "Date of the event"
+    event_duration: "Duration of the meeting formatted as HH:MM:SS",
+    event_date: "Date of the event"
   },
   metadata: {
     overview: "This table tracks scheduled Calendly events such as Intakes and Check-ins. It joins event, invitee, membership, and user records to produce structured transactional event rows.",
@@ -39,13 +39,13 @@ SELECT
     THEN 'Check-in'
     ELSE 'Other'
   END                                                               AS event_type,
-  CAST(DATETIME(EVE.created_timestamp, "Europe/Amsterdam") AS DATETIME) AS intake_created_at,
-  CAST(DATETIME(EVE.start_timestamp, "Europe/Amsterdam") AS DATETIME) AS intake_event_start_time,
-  CAST(DATETIME(EVE.end_timestamp, "Europe/Amsterdam") AS DATETIME) AS intake_event_end_time,
+  CAST(DATETIME(EVE.created_timestamp, "Europe/Amsterdam") AS DATETIME) AS created_at,
+  CAST(DATETIME(EVE.start_timestamp, "Europe/Amsterdam") AS DATETIME) AS event_start_time,
+  CAST(DATETIME(EVE.end_timestamp, "Europe/Amsterdam") AS DATETIME) AS event_end_time,
   U.user_name                                                       AS host_name,
   U.user_email                                                      AS host_email,
-  FORMAT_TIME('%H:%M:%S', TIME(TIMESTAMP_SECONDS(TIMESTAMP_DIFF(EVE.end_timestamp, EVE.start_timestamp, SECOND)))) AS intake_duration,
-  DATE(EVE.start_timestamp)                                         AS intake_date
+  FORMAT_TIME('%H:%M:%S', TIME(TIMESTAMP_SECONDS(TIMESTAMP_DIFF(EVE.end_timestamp, EVE.start_timestamp, SECOND)))) AS event_duration,
+  DATE(EVE.start_timestamp)                                         AS event_date
 FROM ${ref("CalendlyEvents")} AS EVE
 INNER JOIN ${ref("CalendlyEventInvitees")} AS INV 
     ON INV.event_uri = EVE.event_uri
