@@ -33,7 +33,7 @@ SELECT
   EVE.event_status                                                  AS meeting_status,
   EVE.event_name                                                    AS event_name,
   CASE 
-    WHEN EVE.event_name IN ('Medische intake', 'Telefoonconsult ', 'Telefoonconsult','Wellis Medizinisches Team Deutschland (video)','Afspraak met medisch professional','Afspraak met medisch Professional')
+    WHEN EVE.event_name IN ('Medische intake', 'Telefoonconsult ', 'Telefoonconsult','Wellis Medizinisches Team Deutschland (video)','Afspraak met medisch professional','Afspraak met medisch Professional', 'Wellis Medizinisches Team Deutschland  (video)')
     THEN 'Intake'
     WHEN LOWER(EVE.event_name) LIKE 'check%'
     THEN 'Check-in'
