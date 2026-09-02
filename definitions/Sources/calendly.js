@@ -15,13 +15,6 @@ declare({
 declare({
   database: "wellis-400118",
   schema: "calendly",
-  name: "event_type",
-  description: "Raw event type templates table"
-});
-
-declare({
-  database: "wellis-400118",
-  schema: "calendly",
   name: "user_availability_schedule",
   description: "Raw availability schedule headers"
 });
