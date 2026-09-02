@@ -1,0 +1,39 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Cleaned and filtered employee data including hire and contract end dates",
+  columns: {
+    employee_id: "Unique identifier for the employee",
+    first_name: "Employee's first name",
+    last_name: "Employee's last name",
+    email: "Employee's business email",
+    hire_date: "Date the employee was hired",
+    contract_end_date: "Date the employee's contract ends or ended",
+    department_id: "ID of the assigned department",
+    department_name: "Name of the department",
+    work_schedule_id: "ID of the active work schedule",
+    work_schedule_name: "Name of the work schedule",
+    weekly_working_hours: "Target weekly working hours",
+    status: "Employment status",
+    is_deleted: "Boolean flag from Fivetran sync indicating deleted records"
+  }
+}
+
+SELECT
+  id AS employee_id,
+  first_name,
+  last_name,
+  email,
+  DATE(hire_date) AS hire_date,
+  DATE(contract_end_date) AS contract_end_date,
+  department_id,
+  department_name,
+  work_schedule_id,
+  work_schedule_name,
+  weekly_working_hours,
+  status,
+  _fivetran_deleted AS is_deleted
+FROM
+  ${ref("employee")}
+WHERE
+  _fivetran_deleted IS NOT TRUE

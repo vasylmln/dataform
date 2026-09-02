@@ -1,0 +1,111 @@
+config {
+  type: "view",
+  schema: "Datamart",
+  name: "MedOpsAvailabilityKPIs",
+  description: "Aggregated daily scheduled working minutes vs. actual meeting minutes (Intakes and Check-ins) for employees of the Medical Operations department.",
+  columns: {
+    work_date: "Date of the schedule or event",
+    user_name: "Name of the Medical Operations employee",
+    user_email: "Standardized email of the employee",
+    scheduled_working_minutes: "Total working minutes scheduled on this date based on Calendly rules",
+    actual_event_minutes: "Sum of actual intake and check-in durations in minutes",
+    remaining_minutes: "Net minutes remaining (scheduled working minutes minus actual event minutes)",
+    total_intakes: "Total number of intake events hosted",
+    total_check_ins: "Total number of check-in events hosted"
+  },
+  metadata: {
+    overview: "This table/view joins Calendly availability schedules with actual booked events in Core.FactEvents to calculate availability utilization. The data is filtered to show only active employees belonging to the Medical Operations team.",
+    extraProperties: {
+      generic: {
+        type: "fact table",
+        system: "calendly"
+      }
+    }
+  },
+  tags: ["auto-cleaning"]
+}
+
+WITH
+  AGR_Calendly AS (
+    SELECT
+      event_date AS intake_date,
+      host_name AS employee,
+      host_email AS employee_email,
+      COUNTIF(event_type = 'Intake') AS total_intakes,
+      SUM(
+        CASE
+          WHEN event_type = 'Intake'
+            THEN DATETIME_DIFF(event_end_time, event_start_time, MINUTE)
+          ELSE 0
+        END
+      ) AS total_intake_duration_minutes,
+      COUNTIF(event_type = 'Check-in') AS total_check_ins,
+      SUM(
+        CASE
+          WHEN event_type = 'Check-in'
+            THEN DATETIME_DIFF(event_end_time, event_start_time, MINUTE)
+          ELSE 0
+        END
+      ) AS total_check_in_duration_minutes
+    FROM ${ref("FactEvents")}
+    GROUP BY 1, 2, 3
+  ),
+
+  base_data AS (
+    SELECT
+      users.user_name,
+      users.user_email,
+      schedules.schedule_name,
+      rules.weekday_name AS wday,
+      rules.rule_specific_date AS date,
+      rules.start_time_of_day AS from_time,
+      rules.end_time_of_day AS to_time
+    FROM ${ref("CalendlyUsers")} AS users
+    INNER JOIN ${ref("AvailabilitySchedules")} AS schedules
+      ON users.user_uri = schedules.user_uri
+    INNER JOIN ${ref("AvailabilityScheduleRules")} AS rules
+      ON schedules.schedule_uri = rules.schedule_uri
+    INNER JOIN ${ref("Employees")} AS emp
+      ON users.user_email = emp.email
+    WHERE
+      COALESCE(users.is_deleted, FALSE) IS FALSE
+      AND emp.department_name = 'Medical Operations'
+      AND COALESCE(emp.is_deleted, FALSE) IS FALSE
+  ),
+
+  calendar_2026 AS (
+    SELECT day, FORMAT_DATE('%A', day) AS day_name
+    FROM UNNEST(GENERATE_DATE_ARRAY('2026-01-01', '2026-12-31')) AS day
+  ),
+
+  expanded_dates AS (
+    SELECT
+      bd.user_name,
+      bd.user_email,
+      COALESCE(SAFE_CAST(bd.date AS DATE), c.day) AS work_date,
+      SUM(TIME_DIFF(bd.to_time, bd.from_time, MINUTE)) AS scheduled_working_minutes
+    FROM base_data bd
+    LEFT JOIN calendar_2026 c
+      ON bd.date IS NULL 
+      AND bd.wday IS NOT NULL 
+      AND bd.wday = LOWER(c.day_name)
+    WHERE bd.date IS NOT NULL OR c.day IS NOT NULL
+    GROUP BY 1, 2, 3
+  )
+
+SELECT
+  ed.work_date,
+  ed.user_name,
+  ed.user_email,
+  ed.scheduled_working_minutes,
+  COALESCE(ac.total_intake_duration_minutes, 0)
+    + COALESCE(ac.total_check_in_duration_minutes, 0) AS actual_event_minutes,
+  ed.scheduled_working_minutes
+    - (COALESCE(ac.total_intake_duration_minutes, 0) + COALESCE(ac.total_check_in_duration_minutes, 0)) AS remaining_minutes,
+  COALESCE(ac.total_intakes, 0) AS total_intakes,
+  COALESCE(ac.total_check_ins, 0) AS total_check_ins
+FROM expanded_dates ed
+LEFT JOIN AGR_Calendly ac
+  ON ed.work_date = ac.intake_date 
+  AND ed.user_email = ac.employee_email
+ORDER BY ed.work_date DESC, ed.user_email

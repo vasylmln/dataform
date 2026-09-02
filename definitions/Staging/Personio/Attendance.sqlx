@@ -1,0 +1,27 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Staged and cleaned daily attendance records",
+  columns: {
+    attendance_id: "Unique identifier for the attendance record",
+    employee_id: "Unique identifier for the employee",
+    start_date_time: "Session clock-in timestamp",
+    end_date_time: "Session clock-out timestamp",
+    attribution_date: "Calendar date associated with this shift",
+    status: "Attendance record status",
+    is_deleted: "Boolean flag from Fivetran sync indicating deleted records"
+  }
+}
+
+SELECT
+  id AS attendance_id,
+  person_id AS employee_id,
+  start_date_time,
+  end_date_time,
+  attribution_date,
+  status,
+  _fivetran_deleted AS is_deleted
+FROM
+  ${ref("attendance")}
+WHERE
+  _fivetran_deleted IS NOT TRUE
