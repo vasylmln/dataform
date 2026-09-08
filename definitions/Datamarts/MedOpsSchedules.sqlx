@@ -34,7 +34,8 @@ WITH
       rules.weekday_name AS wday,
       rules.rule_specific_date AS date,
       rules.start_time_of_day AS from_time,
-      rules.end_time_of_day AS to_time
+      rules.end_time_of_day AS to_time,
+      CONCAT(rules.start_time_of_day, " - ",  rules.end_time_of_day) AS from_time_to_time
     FROM ${ref("stg_calendly_users")} AS users
     INNER JOIN ${ref("stg_calendly_availability_schedules")} AS schedules
       ON users.user_uri = schedules.user_uri
@@ -60,6 +61,7 @@ SELECT
   COALESCE(SAFE_CAST(bd.date AS DATE), c.day) AS work_date,
   bd.from_time,
   bd.to_time,
+  bd.from_time_to_time,
   TIME_DIFF(bd.to_time, bd.from_time, MINUTE)/60 AS duration_hours,
   bd.schedule_name
 FROM base_data bd
