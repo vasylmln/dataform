@@ -10,7 +10,7 @@ config {
     from_time: "Start time string of the interval",
     to_time: "End time string of the interval",
     start_time_of_day: "Parsed time representation of the start of the interval",
-    end_time_of_day: "Parsed time representation of the end of the interval"
+    end_time_of_day: "Parsed time representation of the end of the interval_test"
   }
 }
 
