@@ -46,11 +46,11 @@ SELECT
   U.user_email                                                      AS host_email,
   FORMAT_TIME('%H:%M:%S', TIME(TIMESTAMP_SECONDS(TIMESTAMP_DIFF(EVE.end_timestamp, EVE.start_timestamp, SECOND)))) AS event_duration,
   DATE(EVE.start_timestamp)                                         AS event_date
-FROM ${ref("CalendlyEvents")} AS EVE
-INNER JOIN ${ref("CalendlyEventInvitees")} AS INV 
+FROM ${ref("stg_calendly_events")} AS EVE
+INNER JOIN ${ref("stg_calendly_event_invitee")} AS INV 
     ON INV.event_uri = EVE.event_uri
-INNER JOIN ${ref("CalendlyEventMemberships")} AS EM 
+INNER JOIN ${ref("stg_calendly_event_membership")} AS EM 
     ON EVE.event_uri = EM.event_uri
-INNER JOIN ${ref("CalendlyUsers")} AS U 
+INNER JOIN ${ref("stg_calendly_users")} AS U 
     ON EM.user_uri = U.user_uri
 WHERE EVE.event_status <> 'canceled'

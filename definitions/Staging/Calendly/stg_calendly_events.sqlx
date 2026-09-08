@@ -1,6 +1,6 @@
 config {
   type: "view",
-  schema: "staging",
+  schema: "Staging",
   description: "Staged and formatted meeting events",
   columns: {
     event_uri: "Unique identifier for the event",

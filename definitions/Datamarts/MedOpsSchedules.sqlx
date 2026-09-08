@@ -16,7 +16,7 @@ config {
     overview: "This table/view expands weekly and date-specific Calendly availability rules into discrete working timeslots per day for active Medical Operations employees across the year 2026, including the duration in minutes for each timeslot.",
     extraProperties: {
       generic: {
-        type: "fact table",
+        type: "Datamart",
         system: "calendly"
       }
     }
@@ -35,12 +35,12 @@ WITH
       rules.rule_specific_date AS date,
       rules.start_time_of_day AS from_time,
       rules.end_time_of_day AS to_time
-    FROM ${ref("CalendlyUsers")} AS users
-    INNER JOIN ${ref("AvailabilitySchedules")} AS schedules
+    FROM ${ref("stg_calendly_users")} AS users
+    INNER JOIN ${ref("stg_calendly_availability_schedules")} AS schedules
       ON users.user_uri = schedules.user_uri
-    INNER JOIN ${ref("AvailabilityScheduleRules")} AS rules
+    INNER JOIN ${ref("stg_calendly_availability_schedule_rules")} AS rules
       ON schedules.schedule_uri = rules.schedule_uri
-    INNER JOIN ${ref("Employees")} AS emp
+    INNER JOIN ${ref("stg_personio_employees")} AS emp
       ON users.user_email = emp.email
     WHERE
       COALESCE(users.is_deleted, FALSE) IS FALSE
