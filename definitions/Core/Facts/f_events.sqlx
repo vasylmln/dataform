@@ -35,7 +35,7 @@ SELECT
   CASE 
     WHEN EVE.event_name IN ('Medische intake', 'Telefoonconsult ', 'Telefoonconsult','Wellis Medizinisches Team Deutschland (video)','Afspraak met medisch professional','Afspraak met medisch Professional', 'Wellis Medizinisches Team Deutschland  (video)')
     THEN 'Intake'
-    WHEN LOWER(EVE.event_name) LIKE 'check%'
+    WHEN LOWER(EVE.event_name) LIKE '%check%'
     THEN 'Check-in'
     ELSE 'Other'
   END                                                               AS event_type,
