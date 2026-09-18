@@ -1,0 +1,23 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Staged header table for user schedules",
+  columns: {
+    schedule_uri: "Unique identifier for the availability schedule",
+    user_uri: "Unique identifier for the user (host) of the schedule",
+    schedule_name: "Name of the availability schedule",
+    is_default_schedule: "Indicates whether this is the user's default schedule",
+    schedule_timezone: "Timezone configured for the schedule"
+  }
+}
+
+SELECT
+  uri AS schedule_uri,
+  user_uri,
+  name AS schedule_name,
+  defaults AS is_default_schedule,
+  timezone AS schedule_timezone
+FROM
+  ${ref("user_availability_schedule")}
+WHERE
+  COALESCE(_fivetran_deleted, FALSE) IS FALSE

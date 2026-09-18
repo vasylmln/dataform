@@ -1,0 +1,57 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Flattens rules and time intervals into a clean schedule layout",
+  columns: {
+    schedule_uri: "Unique identifier of the schedule this rule belongs to",
+    rule_type: "Type of the availability rule (e.g., date-specific or weekday-based)",
+    rule_specific_date: "Specific date for date-specific rule types",
+    weekday_name: "Name of the weekday (in lowercase) for weekly rules",
+    from_time: "Start time string of the interval",
+    to_time: "End time string of the interval",
+    start_time_of_day: "Parsed time representation of the start of the interval",
+    end_time_of_day: "Parsed time representation of the end of the interval"
+  }
+}
+
+WITH base_rules AS (
+  SELECT
+    user_availability_schedule_uri AS schedule_uri,
+    index AS rule_index,
+    date AS rule_specific_date,
+    LOWER(wday) AS weekday_name,
+    type AS rule_type
+  FROM
+    ${ref("user_availability_schedule_rule")}
+  WHERE
+    COALESCE(_fivetran_deleted, FALSE) IS FALSE
+),
+
+intervals AS (
+  SELECT
+    user_availability_schedule_uri AS schedule_uri,
+    user_availability_schedule_rule_index AS rule_index,
+    from_time,
+    to_time
+  FROM
+    ${ref("user_availability_schedule_rule_interval")}
+  WHERE
+    COALESCE(_fivetran_deleted, FALSE) IS FALSE
+)
+
+SELECT
+  r.schedule_uri,
+  r.rule_type,
+  r.rule_specific_date,
+  r.weekday_name,
+  i.from_time,
+  i.to_time,
+  -- Parse time to duration if needed, standardizing hour formats
+  PARSE_TIME('%H:%M', i.from_time) AS start_time_of_day,
+  PARSE_TIME('%H:%M', i.to_time) AS end_time_of_day
+FROM
+  base_rules r
+INNER JOIN
+  intervals i
+  ON r.schedule_uri = i.schedule_uri
+  AND r.rule_index = i.rule_index

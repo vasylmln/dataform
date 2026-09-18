@@ -1,0 +1,27 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Staged and cleaned users (employees) data",
+  columns: {
+    user_uri: "Unique identifier for the user",
+    user_name: "Name of the user",
+    user_email: "Email address of the user",
+    user_timezone: "Timezone of the user",
+    scheduling_url: "Calendly scheduling link for the user",
+    created_timestamp: "Timestamp when the user account was created",
+    updated_timestamp: "Timestamp when the user account was last updated",
+    is_deleted: "Deleted flag from Fivetran sync"
+  }
+}
+
+SELECT
+  uri AS user_uri,
+  name AS user_name,
+  email AS user_email,
+  timezone AS user_timezone,
+  scheduling_url,
+  created_at AS created_timestamp,
+  updated_at AS updated_timestamp,
+  _fivetran_deleted AS is_deleted
+FROM
+  ${ref("users")}

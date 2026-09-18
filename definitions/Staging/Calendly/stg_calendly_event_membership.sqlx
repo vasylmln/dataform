@@ -1,0 +1,18 @@
+config {
+  type: "view",
+  schema: "Staging",
+  description: "Staged event memberships linking meetings to host/employee users",
+  tags: ["auto-cleaning"],
+  columns: {
+    event_uri: "Identifier of the event",
+    user_uri: "Identifier of the user (host)"
+  }
+}
+
+SELECT
+  event_uri,
+  user_uri
+FROM
+  ${ref("event_membership")}
+WHERE
+  COALESCE(_fivetran_deleted, FALSE) IS FALSE
